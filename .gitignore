@@ -1,0 +1,17 @@
+# remove config file
+config.py
+
+#remove server data read file
+read_data.py
+
+#Apple/iOS files
+*.DS_Store
+
+# Environments
+venv/
+
+# PyCharm
+.idea/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
