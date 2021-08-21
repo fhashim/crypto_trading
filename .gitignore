@@ -15,3 +15,7 @@ venv/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
+
+#Remove data file in CSV
+Data/BTCUSDT_20170901_20210731.csv
+~Data/BTCUSDT_20170901_20210731.csv.zip
