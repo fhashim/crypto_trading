@@ -9,7 +9,7 @@ import sys  # To find out the script name (in argv[0])
 
 # Import the backtrader platform
 import backtrader as bt
-import backtrader.analyzers as btanalyzers
+import pyfolio as pf
 
 df = pd.read_csv(r'Data/BTCUSDT_20170901_20210731.csv')
 df['Datetime'] = pd.to_datetime(df['Datetime'], utc=True)
@@ -166,12 +166,20 @@ data = bt.feeds.PandasData(dataname=df)
 
 cerebro.resampledata(data, timeframe=bt.TimeFrame.Minutes, compression=1)
 cerebro.addstrategy(St)
-cerebro.addanalyzer(btanalyzers.SharpeRatio, _name='mysharpe')
+cerebro.addanalyzer(bt.analyzers.PyFolio)
 print('Starting Portfolio Value: %.2f' % cerebro.broker.getvalue())
-runner = cerebro.run()
-print('Final Portfolio Value: %.2f' % cerebro[0].broker.getvalue())
-runner[0].plot()
+results = cerebro.run()
+print('Final Portfolio Value: %.2f' % cerebro.broker.getvalue())
+strat = results[0]
+pyfoliozer = strat.analyzers.getbyname('pyfolio')
+returns, positions, transactions, gross_lev = pyfoliozer.get_pf_items()
 
 # runner = thestrats[0]
 
-print('Sharpe Ratio:', runner[0].analyzers.mysharpe.get_analysis())
+pf.create_full_tear_sheet(
+    returns,
+    positions=positions,
+    transactions=transactions,
+    gross_lev=gross_lev,
+    live_start_date='2017-10-01',  # This date is sample specific
+    round_trips=True)
