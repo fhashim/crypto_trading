@@ -4,19 +4,21 @@ from __future__ import (absolute_import, division, print_function,
 import pandas as pd
 
 import datetime  # For datetime objects
-import os.path  # To manage paths
-import sys  # To find out the script name (in argv[0])
 
 # Import the backtrader platform
 import backtrader as bt
-import pyfolio as pf
+
+# Import quantstats to generate report.
+import quantstats
 
 df = pd.read_csv(r'Data/BTCUSDT_20170901_20210731.csv')
 df['Datetime'] = pd.to_datetime(df['Datetime'], utc=True)
 
 df.loc[:, "OpenInterest"] = 0.0
 df.set_index('Datetime', inplace=True)
-df = df[(df.index >= '2017-10-01 00:00:00') & (df.index <= '2017-10-31 00:59:59')]
+# df = df[(df.index >= '2017-10-01 00:00:00') & (df.index <= '2017-12-31 00:59:59')]
+date_mode = 'yearly'
+df = df[(df.index >= '2018-01-01 00:00:00') & (df.index <= '2018-12-31 00:59:59')]
 
 
 # class Binance(bt.CommissionInfo):
@@ -40,14 +42,6 @@ df = df[(df.index >= '2017-10-01 00:00:00') & (df.index <= '2017-10-31 00:59:59'
 
 
 class St(bt.Strategy):
-    # params = dict(
-    #     ma=bt.ind.SMA,
-    #     p1=10,
-    #     p2=30,
-    #     stoptype=bt.Order.StopTrail,
-    #     # trailamount=0.0,
-    #     trailpercent=0.2,
-    # )
 
     def notify_order(self, order):
         print('{}: Order ref: {} / Type {} / Status {}'.format(
@@ -78,9 +72,9 @@ class St(bt.Strategy):
         p1=5,
         p2=15,
         limit=0.005,
-        limdays=3,
+        limdays=12*60,
         limdays2=1000,
-        hold=10,
+        hold=24*60,
         usebracket=False,  # use order_target_size
         switchp1p2=False,  # switch prices of order1 and order2
 
@@ -174,12 +168,8 @@ strat = results[0]
 pyfoliozer = strat.analyzers.getbyname('pyfolio')
 returns, positions, transactions, gross_lev = pyfoliozer.get_pf_items()
 
-# runner = thestrats[0]
+# To make it compatible with quantstats, remove the timezone awareness using the built-in tz_convert function.
+returns.index = returns.index.tz_convert(None)
 
-pf.create_full_tear_sheet(
-    returns,
-    positions=positions,
-    transactions=transactions,
-    gross_lev=gross_lev,
-    live_start_date='2017-10-01',  # This date is sample specific
-    round_trips=True)
+
+quantstats.reports.html(returns, output='SMA/Stats_{}.html'.format(date_mode), title='BTC Sentiment')
