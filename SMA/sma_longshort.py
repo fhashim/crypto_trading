@@ -16,17 +16,17 @@ df['Datetime'] = pd.to_datetime(df['Datetime'], utc=True)
 
 df.loc[:, "OpenInterest"] = 0.0
 df.set_index('Datetime', inplace=True)
-# df = df[(df.index >= '2017-10-01 00:00:00') & (df.index <= '2017-12-31 00:59:59')]
-# date_mode = 'quarterly'
-date_mode = 'yearly'
-df = df[(df.index >= '2018-01-01 00:00:00') & (df.index <= '2018-12-31 00:59:59')]
+df = df[(df.index >= '2017-10-01 00:00:00') & (df.index <= '2017-12-31 00:59:59')]
+date_mode = 'quarterly'
+# date_mode = 'yearly'
+# df = df[(df.index >= '2018-01-01 00:00:00') & (df.index <= '2018-12-31 00:59:59')]
 
 
 class St(bt.Strategy):
 
     def notify_order(self, order):
         print('{}: Order ref: {} / Type {} / Status {}'.format(
-            self.data.datetime.date(0),
+            self.data.datetime.datetime(0),  # .date(0)
             order.ref, 'Buy' * order.isbuy() or 'Sell',
             order.getstatusname()))
 
@@ -51,12 +51,12 @@ class St(bt.Strategy):
 
     params = dict(
         ma=bt.ind.SMA,
-        p1=30,
-        p2=60,
+        p1=120,
+        p2=240,
         limit=0.005,
-        limdays=12 * 60,
-        limdays2=1000,
-        hold=24 * 60,
+        limdays=1,
+        limdays2=1,
+        hold=2,
         usebracket_buy=False,  # buy use order_target_size
         switchp1p2_buy=False,  # buy switch prices of order1 and order2
         usebracket_sell=False,  # buy use order_target_size
@@ -75,7 +75,7 @@ class St(bt.Strategy):
                 close = self.data.close[0]
                 p1_buy = close * (1.0 - self.p.limit)
                 p2_buy = p1_buy - 0.02 * close
-                p3_buy = p1_buy + 0.02 * close
+                p3_buy = p1_buy + 0.05 * close
 
                 valid1_buy = datetime.timedelta(self.p.limdays)
                 valid2_buy = valid3_buy = datetime.timedelta(self.p.limdays2)
@@ -95,7 +95,7 @@ class St(bt.Strategy):
                                   transmit=False)
 
                     print('{}: Oref {} / Buy at {}'.format(
-                        self.datetime.date(), o1.ref, p1_buy))
+                        self.datetime.datetime(), o1.ref, p1_buy))
 
                     o2 = self.sell(exectype=bt.Order.Stop,
                                    price=p2_buy,
@@ -105,7 +105,7 @@ class St(bt.Strategy):
                                    transmit=False)
 
                     print('{}: Oref {} / Sell Stop at {}'.format(
-                        self.datetime.date(), o2.ref, p2_buy))
+                        self.datetime.datetime(), o2.ref, p2_buy))
 
                     o3 = self.sell(exectype=bt.Order.Limit,
                                    price=p3_buy,
@@ -115,7 +115,7 @@ class St(bt.Strategy):
                                    transmit=True)
 
                     print('{}: Oref {} / Sell Limit at {}'.format(
-                        self.datetime.date(), o3.ref, p3_buy))
+                        self.datetime.datetime(), o3.ref, p3_buy))
 
                     self.orefs = [o1.ref, o2.ref, o3.ref]
 
@@ -132,7 +132,7 @@ class St(bt.Strategy):
                 close = self.data.close[0]
                 p1_sell = close * (1.0 + self.p.limit)
                 p2_sell = p1_sell + 0.02 * close
-                p3_sell = p1_sell - 0.02 * close
+                p3_sell = p1_sell - 0.05 * close
 
                 valid1_sell = datetime.timedelta(self.p.limdays)
                 valid2_sell = valid3_sell = datetime.timedelta(self.p.limdays2)
@@ -152,7 +152,7 @@ class St(bt.Strategy):
                                    transmit=False)
 
                     print('{}: Oref {} / Sell at {}'.format(
-                        self.datetime.date(), o1.ref, p1_sell))
+                        self.datetime.datetime(), o1.ref, p1_sell))
 
                     o2 = self.buy(exectype=bt.Order.Stop,
                                   price=p2_sell,
@@ -162,7 +162,7 @@ class St(bt.Strategy):
                                   transmit=False)
 
                     print('{}: Oref {} / Buy Stop at {}'.format(
-                        self.datetime.date(), o2.ref, p2_sell))
+                        self.datetime.datetime(), o2.ref, p2_sell))
 
                     o3 = self.buy(exectype=bt.Order.Limit,
                                   price=p3_sell,
@@ -172,19 +172,19 @@ class St(bt.Strategy):
                                   transmit=True)
 
                     print('{}: Oref {} / Buy Limit at {}'.format(
-                        self.datetime.date(), o3.ref, p3_sell))
+                        self.datetime.datetime(), o3.ref, p3_sell))
 
                     self.orefs = [o1.ref, o2.ref, o3.ref]
                 else:
                     os = self.sell_bracket(
                         price=p1_sell, valid=valid1_sell,
-                        stopprice=p2_sell, stopargs=dict(valid=valid2_sell),
-                        limitprice=p3_sell, limitargs=dict(valid=valid3_sell), )
+                        stopprice=p3_sell, stopargs=dict(valid=valid3_sell),
+                        limitprice=p2_sell, limitargs=dict(valid=valid2_sell), )
 
                     self.orefs = [o.ref for o in os]
         else:  # in the market
             if (len(self) - self.holdstart) >= self.p.hold:
-                pass  # do nothing in this case
+                self.close()
 
 
 cerebro = bt.Cerebro()
@@ -205,7 +205,7 @@ returns, positions, transactions, gross_lev = pyfoliozer.get_pf_items()
 # To make it compatible with quantstats, remove the timezone awareness using the built-in tz_convert function.
 returns.index = returns.index.tz_convert(None)
 
-quantstats.reports.html(returns, output='SMA/{}/Stats.html'.format(date_mode), title='BTC Sentiment')
+quantstats.reports.html(returns, output='SMA/{}/Stats_1.html'.format(date_mode), title='BTC Sentiment')
 
 returns.to_csv('SMA/{}/Stats_Returns.csv'.format(date_mode))
 positions.to_csv('SMA/{}/Stats_Positions.csv'.format(date_mode))
