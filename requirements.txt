@@ -30,4 +30,4 @@ ujson==4.1.0
 urllib3==1.26.6
 websockets==9.1
 yarl==1.6.3
-pyfolio==0.5.1
+quantstats==0.0.34
