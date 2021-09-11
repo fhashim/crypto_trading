@@ -18,4 +18,6 @@ __pycache__/
 
 #Remove data file in CSV
 Data/BTCUSDT_20170901_20210731.csv
+
+# Add zip file
 ~Data/BTCUSDT_20170901_20210731.csv.zip
