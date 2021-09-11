@@ -20,11 +20,11 @@ df.set_index('Datetime', inplace=True)
 # date_mode = 'Bi-annually'
 # df = df[(df.index >= '2019-01-01 00:00:00') & (df.index <= '2019-06-30 00:59:59')]
 
-date_mode = 'Quarterly'
-df = df[(df.index >= '2017-10-01 00:00:00') & (df.index <= '2017-12-31 00:59:59')]
+# date_mode = 'Quarterly'
+# df = df[(df.index >= '2017-10-01 00:00:00') & (df.index <= '2017-12-31 00:59:59')]
 
-# date_mode = 'Yearly'
-# df = df[(df.index >= '2018-01-01 00:00:00') & (df.index <= '2018-12-31 00:59:59')]
+date_mode = 'Yearly'
+df = df[(df.index >= '2018-01-01 00:00:00') & (df.index <= '2018-12-31 00:59:59')]
 
 
 class St(bt.Strategy):
@@ -45,7 +45,6 @@ class St(bt.Strategy):
         ma1, ma2 = self.p.ma(period=self.p.p1), self.p.ma(period=self.p.p2)
         self.cross = bt.ind.CrossOver(ma1, ma2)
         self.will = bt.talib.WILLR(self.data.high, self.data.low, self.data.close, timeperiod=120)
-        self.mfi = bt.talib.MFI(self.data.high, self.data.low, self.data.close, self.data.volume, timeperiod=30)
 
         self.orefs = list()
         self.size_buy = None
@@ -62,8 +61,8 @@ class St(bt.Strategy):
         p2=120,
         limit=0.005,
         limdays=3 * 60,
-        limdays2=4 * 120,
-        hold=4 * 120 + 1,
+        limdays2=6 * 60,
+        hold=6 * 60 + 1,
         usebracket_buy=False,  # buy use order_target_size
         switchp1p2_buy=False,  # buy switch prices of order1 and order2
         usebracket_sell=False,  # buy use order_target_size
@@ -80,7 +79,6 @@ class St(bt.Strategy):
         if not self.position:
             if self.cross > 0.0:  # crossing up
                 if self.will < -70:
-                #     if self.mfi < 20:
                     close = self.data.close[0]
                     p1_buy = close * (1.0 - self.p.limit)
                     p2_buy = p1_buy - 0.1 * close
@@ -139,8 +137,6 @@ class St(bt.Strategy):
             # Sell Short
             elif self.cross < 0.0:  # crossing up:
                 if self.will > -30:
-                    #     if self.mfi > 80:
-                    #         breakpoint()
                     close = self.data.close[0]
                     p1_sell = close * (1.0 + self.p.limit)
                     p2_sell = p1_sell + 0.1 * close
@@ -225,7 +221,7 @@ returns, positions, transactions, gross_lev = pyfoliozer.get_pf_items()
 # To make it compatible with quantstats, remove the timezone awareness using the built-in tz_convert function.
 returns.index = returns.index.tz_convert(None)
 
-quantstats.reports.html(returns, output=r'D:\crypto_trading\Strategy_1\{}\Stats.html'.format(date_mode),
+quantstats.reports.html(returns, output=r'D:\crypto_trading\Strategy_1\{}\Results.html'.format(date_mode),
                         title="BTC {}".format(date_mode))
 
 print('Analyzer:', strat.analyzers.ta.get_analysis()['won'])
