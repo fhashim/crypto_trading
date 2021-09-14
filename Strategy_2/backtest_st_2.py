@@ -14,7 +14,7 @@ import quantstats
 # For analysing results
 import backtrader.analyzers as btanalyzers
 
-df = pd.read_csv(r'D:\crypto_trading\Data\BTCUSDT_20170901_20210731.csv')
+df = pd.read_csv(r'Data\BTCUSDT_20170901_20210731.csv')
 df['Datetime'] = pd.to_datetime(df['Datetime'], utc=True)
 
 df.loc[:, "OpenInterest"] = 0.0
@@ -207,7 +207,7 @@ returns, positions, transactions, gross_lev = pyfoliozer.get_pf_items()
 # To make it compatible with quantstats, remove the timezone awareness using the built-in tz_convert function.
 returns.index = returns.index.tz_convert(None)
 
-quantstats.reports.html(returns, output=r'D:\crypto_trading\Strategy_2\{}\Results.html'.format(date_mode),
+quantstats.reports.html(returns, output=r'Strategy_2\{}\Results.html'.format(date_mode),
                         title="BTC {}".format(date_mode))
 
 print('Analyzer:', strat.analyzers.ta.get_analysis()['won'])
@@ -216,9 +216,9 @@ print('Analyzer:', strat.analyzers.ta.get_analysis()['long'])
 print('Analyzer:', strat.analyzers.ta.get_analysis()['short'])
 print('SQN:', strat.analyzers.sqn.get_analysis())
 
-returns.to_csv(r'D:\crypto_trading\Strategy_2\{}\Returns.csv'.format(date_mode))
-positions.to_csv(r'D:\crypto_trading\Strategy_2\{}\Positions.csv'.format(date_mode))
-transactions.to_csv(r'D:\crypto_trading\Strategy_2\{}\Transactions.csv'.format(date_mode))
-gross_lev.to_csv(r'D:\crypto_trading\Strategy_2\{}\Gross_leverage.csv'.format(date_mode))
+returns.to_csv(r'Strategy_2\{}\Returns.csv'.format(date_mode))
+positions.to_csv(r'Strategy_2\{}\Positions.csv'.format(date_mode))
+transactions.to_csv(r'Strategy_2\{}\Transactions.csv'.format(date_mode))
+gross_lev.to_csv(r'Strategy_2\{}\Gross_leverage.csv'.format(date_mode))
 
 cerebro.plot()
