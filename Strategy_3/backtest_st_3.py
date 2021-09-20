@@ -24,12 +24,15 @@ df.set_index('Datetime', inplace=True)
 # df = df[(df.index >= '2019-01-01 00:00:00') & (df.index <= '2019-06-30 00:59:59')]
 
 
-date_mode = 'Quarterly'
-df = df[(df.index >= '2017-10-01 00:00:00') & (df.index <= '2017-12-31 00:59:59')]
+# date_mode = 'Quarterly'
+# df = df[(df.index >= '2017-10-01 00:00:00') & (df.index <= '2017-12-31 00:59:59')]
 
 
 # date_mode = 'Yearly'
 # df = df[(df.index >= '2018-01-01 00:00:00') & (df.index <= '2018-12-31 00:59:59')]
+
+date_mode = 'Custom'
+df = df[(df.index >= '2019-07-01 00:00:00') & (df.index <= '2021-08-11 23:59:59')]
 
 class VolumeWeightedAveragePrice(bt.Indicator):
     plotinfo = dict(subplot=False)
