@@ -21,6 +21,8 @@ Data/BTCUSDT_20170901_20210731.csv
 
 # Add zip file
 ~Data/BTCUSDT_20170901_20210731.csv.zip
+Data/BTC_TA.csv
 
 # Remove Config
 config.py
+
